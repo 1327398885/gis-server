@@ -29,12 +29,11 @@ import org.geotools.styling.Stroke;
 import org.opengis.filter.FilterFactory2;
 
 
-
 public class VectorDataRenderer {
 
     public static void main(String[] args) throws IOException {
-        File shapeFile = new File("/Users/sungang/Documents/data/tiff/320205/xbz.shp");
-        renderShapefileToImage(shapeFile, "/Users/sungang/Documents/data/tiff/320205/output/output-image1.png");
+        File shapeFile = new File("E:\\code\\github\\gis-server\\data\\shapefile\\320205_county.shp");
+        renderShapefileToImage(shapeFile, "E:\\code\\github\\gis-server\\data\\output\\VectorDataRenderer.png");
     }
 
     public static void renderShapefileToImage(File shapeFile, String outputImagePath) throws IOException {
