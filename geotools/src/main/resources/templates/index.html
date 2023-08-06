@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <!-- 引入Bootstrap的CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+</head>
+<body>
+<p th:text="${message}"></p>
+<p>服务监听状态:</p><p th:text="${healthData}"></p>
+
+<h2>度量指标列表：</h2>
+<div class="list-group">
+    <th:block th:each="metricName : ${metricsData.keySet()}">
+        <div class="list-group-item">
+            <a th:href="@{'/actuator/metrics/' + ${metricName}}" th:text="${metricName}"></a>
+            （<span th:text="${metricComments.get(metricName)}"></span>）
+            <ul>
+                <th:block th:each="statistic, formattedValue : ${metricsData.get(metricName)}">
+                    <li th:text="${statistic}"></li>
+                </th:block>
+            </ul>
+        </div>
+    </th:block>
+</div>
+<!-- 引入Bootstrap的JS -->
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+</body>
+</html>

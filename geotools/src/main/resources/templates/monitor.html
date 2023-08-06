@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <!-- 引入Bootstrap的CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <!-- 引入Vue.js -->
+    <script src="https://unpkg.com/vue@2.6.12/dist/vue.js"></script>
+    <!-- 引入jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+</head>
+<body>
+<div id="app">
+    <p v-text="message"></p>
+    <p>服务监听状态:</p>
+    <p v-text="healthData"></p>
+
+    <h2>度量指标列表：</h2>
+    <div class="list-group">
+        <div class="list-group-item" v-for="metricName in Object.keys(metricsData)">
+            <a v-bind:href="'/actuator/metrics/' + metricName" v-text="metricName"></a>
+            （<span v-text="metricComments[metricName]"></span>）
+            <ul>
+                <li v-for="(formattedValue, statistic) in metricsData[metricName]" v-text="formattedValue"></li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- 引入Bootstrap的JS -->
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+<script>
+    new Vue({
+        el: '#app',
+        data: {
+            message: '',
+            healthData: '',
+            metricsData: {},
+            metricComments: {},
+        },
+        created: function () {
+            this.fetchData();
+            this.startPolling();
+        },
+        // 实现数据的动态更新
+        methods: {
+            fetchData: function () {
+                let vm = this;
+                $.get('/monitor/get-metrics', function (data) {
+                    // console.log(data)
+                    if (data.code === 200) {
+                        vm.metricsData = data.data.metricsData;
+                        vm.metricComments = data.data.metricComments;
+                    } else {
+
+                    }
+
+                });
+            },
+            startPolling: function () {
+                setInterval(this.fetchData, 10000);
+            }
+        }
+    });
+</script>
+
+</body>
+</html>
