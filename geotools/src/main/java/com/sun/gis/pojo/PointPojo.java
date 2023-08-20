@@ -11,9 +11,9 @@ import lombok.Data;
 public class PointPojo {
 
     @ApiModelProperty(value = "x坐标")
-    private Double x;
+    private String x;
 
     @ApiModelProperty(value = "y坐标")
-    private Double y;
+    private String y;
 
 }

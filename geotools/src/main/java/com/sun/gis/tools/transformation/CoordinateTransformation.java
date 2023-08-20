@@ -1,17 +1,13 @@
 package com.sun.gis.tools.transformation;
 
-import com.sun.gis.pojo.PointPojo;
-import org.geotools.geometry.DirectPosition2D;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.geotools.referencing.CRS;
 import org.locationtech.jts.geom.*;
-import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
-import org.opengis.referencing.FactoryException;
+
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.TransformException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,42 +28,19 @@ public class CoordinateTransformation {
     static GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
     static WKTReader reader = new WKTReader(geometryFactory);
 
-    private static final Pattern COORDINATE_PATTERN = Pattern.compile("[1-9]\\d*\\.?\\d*\\s[1-9]\\d*\\.?\\d*");
-
 
     /**
-     * 点坐标转换
+     * 该模式适用于匹配两个数字的坐标，例如地理坐标或二维平面上的点，其中每个数字都不能以0开头
      *
-     * @param x         横坐标
-     * @param y         纵坐标
-     * @param sourceSRS 源数据坐标 EPSG:4549
-     * @param targetSRS 目标数据坐标 EPSG:4326
-     * @return PointPojo
+     * [1-9]: 匹配一个1到9之间的数字（不包括0）。
+     * \\d*: 匹配零个或多个数字字符（\\d表示数字，*表示零次或多次匹配）。
+     * \\.?: 匹配零个或一个点字符（.通常在正则表达式中用作特殊字符，所以需要使用\\.来匹配实际的点字符。?表示零次或一次匹配）。
+     * \\d*: 再次匹配零个或多个数字字符。
+     * \\s: 匹配一个空白字符（例如空格、制表符等）。
+     * [1-9]\\d*\\.?\\d*: 和前面相同，匹配一个1到9之间的数字，然后是零个或多个数字，然后是可选的小数点和更多的数字。
      */
-    public static PointPojo transformation(Double x, Double y, String sourceSRS, String targetSRS) {
-        PointPojo pointPojo = new PointPojo();
+    private static final Pattern COORDINATE_PATTERN = Pattern.compile("[1-9]\\d*\\.?\\d*\\s[1-9]\\d*\\.?\\d*");
 
-        try {
-            //封装点，x,y 要反过来，不反过来就报纬度超过90的异常
-            String point = "POINT(" + y + " " + x + ")";
-            Geometry geometry = reader.read(point);
-            //这里要选择转换的坐标系是可以随意更换的
-            CoordinateReferenceSystem source = CRS.decode(sourceSRS);
-            CoordinateReferenceSystem target = CRS.decode(targetSRS);
-
-            MathTransform transform = CRS.findMathTransform(source, target, true);
-
-            //转换坐标
-            Geometry trans = JTS.transform(geometry, transform);
-            pointPojo.setX(trans.getCentroid().getX());
-            pointPojo.setY(trans.getCentroid().getY());
-        } catch (FactoryException | TransformException | ParseException e) {
-            e.printStackTrace();
-        }
-
-
-        return pointPojo;
-    }
 
     /**
      * Geometry Multi 坐标转换
@@ -107,6 +80,5 @@ public class CoordinateTransformation {
             return null;
         }
     }
-
 
 }

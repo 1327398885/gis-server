@@ -1,12 +1,13 @@
 package com.sun.gis.transformation;
 
-import com.sun.gis.pojo.PointPojo;
 import com.sun.gis.tools.transformation.CoordinateTransformation;
 import org.junit.Test;
 import org.locationtech.jts.geom.*;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 import org.springframework.boot.test.context.SpringBootTest;
+
+import java.text.DecimalFormat;
 
 /**
  * @author sunbt
@@ -16,15 +17,38 @@ import org.springframework.boot.test.context.SpringBootTest;
 public class CoordinateTransformationTest {
 
     /**
+     * 格式化double
+     *
+     * @param value double值
+     * @return String
+     */
+    public String formatDouble(double value) {
+        DecimalFormat df = new DecimalFormat("0");
+        // 设置表示的小数点后的位数
+        df.setMaximumFractionDigits(340);
+        return df.format(value);
+    }
+
+    /**
      * 4326坐标转3857坐标
      */
     @Test
     public void transformationTest1() {
-        //某点的经纬度
-        Double y = 34.26095856;
-        Double x = 108.94237668;
-        PointPojo pointPojo = CoordinateTransformation.transformation(x, y, "EPSG:4326", "EPSG:3857");
-        System.out.println(pointPojo.toString());
+        String wkt = "POINT(108.94237668 34.26095856)";
+        try {
+            WKTReader reader = new WKTReader();
+            Geometry geom = reader.read(wkt);
+            Geometry geometry = CoordinateTransformation.geometryTransformMulti(geom, 4326, 3857);
+            System.out.println(geometry);
+            Coordinate[] coordinates = geometry.getCoordinates();
+            for (Coordinate coordinate : coordinates
+            ) {
+                System.out.println(formatDouble(coordinate.getX()));
+                System.out.println(formatDouble(coordinate.getY()));
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -32,12 +56,21 @@ public class CoordinateTransformationTest {
      */
     @Test
     public void transformationTest2() {
-        //某点的经纬度
-        double y = 3514147.96;
-        double x = 350543.244;
-        PointPojo pointPojo = CoordinateTransformation.transformation(x, y, "EPSG:4549", "EPSG:4326");
-        System.out.println(pointPojo.toString());
-
+        String wkt = "POINT(350543.244 3514147.96)";
+        try {
+            WKTReader reader = new WKTReader();
+            Geometry geom = reader.read(wkt);
+            Geometry geometry = CoordinateTransformation.geometryTransformMulti(geom, 4549, 4326);
+            System.out.println(geometry);
+            Coordinate[] coordinates = geometry.getCoordinates();
+            for (Coordinate coordinate : coordinates
+            ) {
+                System.out.println(coordinate.getX());
+                System.out.println(coordinate.getY());
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -124,7 +157,7 @@ public class CoordinateTransformationTest {
     }
 
     /**
-     * Geometry 坐标转换 线
+     * Geometry 坐标转换 多线
      * 4326 to 3857
      */
     @Test
