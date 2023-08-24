@@ -34,11 +34,10 @@ public class RasterSliceTMS {
 
     // 主函数，创建ImageLab实例并调用getLayersAndDisplay方法
     public static void main(String[] args) throws Exception {
-        File rasterFile = new File("E:\\data\\output\\2020053857.tif");
+        File rasterFile = new File("E:\\code\\github\\gis-server\\data\\tiff\\320205_3857.tif");
         RasterSliceTMS rasterSliceTMS2 = new RasterSliceTMS();
-        int zoomLevel = 15;
-        String output = "E:\\data\\output\\slice6";
-        for (int i = 1; i <= 12; i++) {
+        String output = "E:\\code\\github\\gis-server\\data\\output\\RasterSliceTMS";
+        for (int i = 1; i <= 10; i++) {
             // 从向导中获取用户输入的文件，并调用displayLayers方法显示图层
             rasterSliceTMS2.displayLayers(rasterFile, i, output);
         }
