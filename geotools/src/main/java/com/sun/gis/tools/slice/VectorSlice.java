@@ -26,7 +26,7 @@ public class VectorSlice {
 
     public static void main(String[] args) throws IOException {
         // 读取矢量数据源
-        File shapefile = new File("E:\\data\\division\\county.shp");
+        File shapefile = new File("/Users/sungang/Documents/code/github/gis-server/data/shapefile/320205_county.shp");
         FileDataStore dataStore = FileDataStoreFinder.getDataStore(shapefile);
         SimpleFeatureSource featureSource = dataStore.getFeatureSource();
 
@@ -70,7 +70,7 @@ public class VectorSlice {
                 renderer.paint(graphics, new Rectangle(tileSize, tileSize), mapContent.getViewport().getBounds());
 
                 // 保存切片为PNG格式
-                File output = new File("E:\\data\\output\\slice\\tile_" + zoomLevel + "_" + x + "_" + y + ".png");
+                File output = new File("/Users/sungang/Documents/code/github/gis-server/data/output/VectorSlice"+File.separator+"tile_" + zoomLevel + "_" + x + "_" + y + ".png");
                 ImageIO.write(image, "PNG", output);
                 mapContent.dispose();
             }
