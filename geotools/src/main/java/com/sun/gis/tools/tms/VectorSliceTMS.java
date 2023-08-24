@@ -199,9 +199,9 @@ public class VectorSliceTMS {
 
     public static void main(String[] args) throws IOException, FactoryException, TransformException {
 
-        File shapefile = new File("E:\\data\\output\\county_4490.shp");
-        String outputDir = "E:\\data\\output\\slice9";
-        for (int i = 1; i <= 15; i++) {
+        File shapefile = new File("/Users/sungang/Documents/code/github/gis-server/data/shapefile/320205_county.shp");
+        String outputDir = "/Users/sungang/Documents/code/github/gis-server/data/output/VectorSliceTMS";
+        for (int i = 1; i <= 10; i++) {
             processVectorData(shapefile, outputDir, i);
         }
     }
