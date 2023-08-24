@@ -51,9 +51,9 @@ public class RasterDataRenderer {
 
     // 主函数，创建ImageLab实例并调用getLayersAndDisplay方法
     public static void main(String[] args) throws Exception {
-        File shapeFile = new File("E:\\data\\output\\jcsj\\JCBH_320205202009201102001.shp");
-        File rasterFile = new File("E:\\data\\output\\202005.tif");
-        File outputFile = new File("E:\\data\\output\\tiff.png");
+        File shapeFile = new File("/Users/sungang/Documents/code/github/gis-server/data/shapefile/320205_county.shp");
+        File rasterFile = new File("/Users/sungang/Documents/code/github/gis-server/data/tiff/320205.tif");
+        File outputFile = new File("/Users/sungang/Documents/code/github/gis-server/data/output/RasterDataRenderer.png");
         RasterDataRenderer rasterDataRenderer = new RasterDataRenderer();
         // 从向导中获取用户输入的文件，并调用displayLayers方法显示图层
         rasterDataRenderer.displayLayers(rasterFile, shapeFile, outputFile);
