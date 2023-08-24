@@ -200,8 +200,8 @@ public class VectorSliceGoogleXYZ {
 
     public static void main(String[] args) throws IOException, FactoryException, TransformException {
 
-        File shapefile = new File("E:\\data\\division\\county.shp");
-        String outputDir = "E:\\data\\output\\slice4";
+        File shapefile = new File("E:\\code\\github\\gis-server\\data\\shapefile\\320205_county.shp");
+        String outputDir = "E:\\code\\github\\gis-server\\data\\output\\VectorSliceGoogleXYZ";
         File dirFile = new File(outputDir);
         if (!dirFile.exists()) {
             dirFile.mkdirs();
