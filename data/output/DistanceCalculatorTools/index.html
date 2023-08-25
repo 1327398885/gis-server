@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Turf.js Point to Polygon Distance Demo</title>
+    <script src="https://cdn.bootcdn.net/ajax/libs/Turf.js/6.5.0/turf.min.js"></script>
+</head>
+<body>
+<script>
+    // 获取输入的点的经纬度,
+    let pointLng = 111.7362653962129,
+        pointLat =  40.712992153869635
+
+
+    // 获取输入的多边形坐标
+    const polygonCoords = [
+        [
+            [
+                111.74282981393162,
+                40.72576127838573
+            ],
+            [
+                111.74282981393162,
+                40.719385639840056
+            ],
+            [
+                111.75522717309315,
+                40.719385639840056
+            ],
+            [
+                111.75522717309315,
+                40.72576127838573
+            ],
+            [
+                111.74282981393162,
+                40.72576127838573
+            ]
+        ]
+    ]
+    let poly = turf.polygon(polygonCoords);
+    console.log(poly)
+
+    // 创建点的 GeoJSON 对象
+    const pt = turf.point([pointLng, pointLat]);
+    let distance = 0;
+    let pointInPolygon = turf.booleanPointInPolygon(pt, poly);
+    console.log(pointInPolygon)
+
+    if(!pointInPolygon){
+        distance = Infinity;
+        // 遍历多边形的每个边
+        for (let i = 0; i < poly.geometry.coordinates[0].length - 1; i++) {
+            let line = turf.lineString([
+                poly.geometry.coordinates[0][i],
+                poly.geometry.coordinates[0][i + 1]
+            ]);
+            let newPt = turf.nearestPointOnLine(line, pt);
+            let newDistance = turf.distance(pt, newPt);
+            distance = Math.min(distance, newDistance);
+        }
+    }
+    console.log(distance)
+</script>
+</body>
+</html>
