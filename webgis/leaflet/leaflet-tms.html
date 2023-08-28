@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaflet TMS and OSM Example</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+</head>
+<style type="text/css">
+    body {
+        margin: 0;
+        padding: 0;
+    }
+    html, body, #map{
+        width: 100%;
+        height: 100%;
+    }
+</style>
+<body>
+
+<div id="map" ></div>
+
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var map = L.map('map',{
+            maxZoom:18,
+            minZoom:5
+        }).setView([31.562710059362658,120.29751401540051], 8); // 初始化地图并设置中心和缩放级别
+
+        // 加载 OpenStreetMap 底图
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // 加载本地 TMS 切片。请根据你的文件路径进行修改
+        L.tileLayer('http://localhost:8080/geoserver/gwc/service/tms/1.0.0/jiangsu%3A320205_202005@EPSG%3A900913@png/{z}/{x}/{y}.png', {
+            maxNativeZoom: 16,
+            tms: true,
+            opacity: 1 // 切片的透明度，你可以根据需要进行调整
+        }).addTo(map);
+    });
+
+</script>
+
+</body>
+</html>

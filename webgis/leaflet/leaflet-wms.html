@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Leaflet GeoWebCache WMS Layer</title>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4leaflet/1.0.1/proj4leaflet.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+</head>
+<body>
+<div id="map" style="width: 100%; height: 500px;"></div>
+<script>
+
+    // 创建Leaflet地图对象
+    var map = L.map('map', {
+        minZoom: 3,
+        maxZoom: 20,
+        zoom: 10,
+    }).setView([32.0, 119.5], 9); // 将中心设置为江苏省
+
+
+    // 添加基础地图图层
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // 添加GeoWebCache的WMS图层
+    var wmsLayer = L.tileLayer.wms('http://218.2.231.242:18081/geowebcache/service/wms', {
+        layers: 'Image2022',
+        format: 'image/jpeg',
+        transparent: true,
+        srs: "EPSG:4490"
+    }).addTo(map);
+</script>
+</body>
+</html>

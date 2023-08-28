@@ -111,6 +111,25 @@
             <artifactId>gt-jdbc-postgis</artifactId>
             <version>${geotools.version}</version>
         </dependency>
+        <!-- TMS support -->
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-tile-client</artifactId>
+            <version>${geotools.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-wmts</artifactId>
+            <version>${geotools.version}</version>
+        </dependency>
+
+        <!-- WMS support -->
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-wms</artifactId>
+            <version>${geotools.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>net.sf.geographiclib</groupId>

@@ -6,7 +6,6 @@ import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.map.FeatureLayer;
 import org.geotools.map.MapContent;
 import org.geotools.styling.Style;
-import org.geotools.swing.JMapFrame;
 import org.junit.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
