@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaflet WMS Example</title>
+    <!-- Leaflet CSS and JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+    <!-- Proj4js and Proj4Leaflet -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.7.5/proj4.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4leaflet/1.0.2/proj4leaflet.min.js"></script>
+
+</head>
+
+<body>
+
+<div id="map" style="width: 100%; height: 500px;"></div>
+
+<script>
+    var crs4490 = new L.Proj.CRS(
+        'EPSG:4490',
+        '+proj=longlat +ellps=GRS80 +no_defs',
+        {
+            origin: [-180, 90],
+            resolutions: [
+                0.703125, 0.3515625, 0.17578125, 0.087890625, 0.0439453125,
+                0.02197265625, 0.010986328125, 0.0054931640625, 0.00274658203125
+            ],
+            bounds: L.bounds(L.point([-180, -90]), L.point([180, 90]))
+        }
+    );
+
+    // 初始化地图并设置中心和缩放级别
+    var map = L.map('map').setView([0, 0], 2); // 这里的[0, 0]是地图的初始中心，2是初始的缩放级别
+
+    // 添加OSM底图
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // 添加WMS图层
+    // var wmsLayer = L.tileLayer.wms("http://192.168.1.249:8080/geoserver/ows?", {
+    //     layers: 'wuxi:20200524',
+    //     format: 'image/png',
+    //     transparent: true,
+    //     version: '1.1.0'
+    // }).addTo(map);
+
+    // 添加GeoWebCache WMS图层
+    var wmsLayer = L.tileLayer.wms("http://218.2.231.242:18081/geowebcache/service/wms?", {
+        layers: 'Image2022',
+        format: 'image/jpeg',
+        transparent: true,
+        version: '1.1.1',
+        crs:crs4490
+
+    }).addTo(map);
+</script>
+
+</body>
+
+</html>
