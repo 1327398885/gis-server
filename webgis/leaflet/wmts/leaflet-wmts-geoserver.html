@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaflet WMS Example</title>
+    <!-- Leaflet CSS and JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+    <!-- Proj4js and Proj4Leaflet -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.7.5/proj4.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4leaflet/1.0.2/proj4leaflet.min.js"></script>
+
+    <script src="leaflet.tilelayer.wmts.src.js"></script>
+</head>
+
+<body>
+
+<div id="map" style="width: 100%; height: 500px;"></div>
+
+<script>
+
+    // 初始化地图并设置中心和缩放级别
+    var map = L.map('map',{
+    }).setView([32.9708, 119.4645], 5); // 这里的[0, 0]是地图的初始中心，2是初始的缩放级别
+
+    // 加载 OpenStreetMap 底图
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    var wmtsUrl = 'http://localhost:8080/geoserver/gwc/service/wmts';
+    var wmtsLayer = L.tileLayer.wmts(wmtsUrl, {
+        layer: 'jiangsu:320205_202005', // WMTS地图层的名称
+        style: '', // WMTS地图样式的名称
+        format: 'image/png', // WMTS支持的图像格式，可以是image/png、image/jpeg、image/gif等
+        tilematrixSet: 'WebMercatorQuad', // WMTS的瓦片矩阵集名称
+        projection: 'EPSG:3857', // WMTS的投影方式，这里使用的是4490坐标系
+        tileSize: 256 // WMTS的瓦片大小，一般为256x256像素
+    });
+    map.addLayer(wmtsLayer);
+
+</script>
+
+</body>
+
+</html>
