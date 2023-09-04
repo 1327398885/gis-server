@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Leaflet + Jiangsu Tianditu Example</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 引入 Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
+</head>
+<body>
+<!-- 创建一个地图容器 -->
+<div id="map" style="width: 800px; height: 600px;"></div>
+
+<!-- 引入 Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script src="https://unpkg.com/esri-leaflet@3.0.7/dist/esri-leaflet.js"></script>
+<script>
+    // 初始化地图并设置中心点和缩放级别
+    var map = L.map('map',{
+    }).setView([32.1, 118.8], 5); // 这里的[0, 0]是地图的初始中心，2是初始的缩放级别
+
+    // const map = L.map("map").setView([ 40.672827, -73.957901], 11);
+
+    L.esri.tiledMapLayer({
+        url: 'http://jiangsu.tianditu.gov.cn/historyraster/rest/services/History/yxdt_js_1976_2k/MapServer',
+        format: 'jpg',
+        attribution: 'Tiles &copy; Esri'
+    }).addTo(map);
+    // L.esri.dynamicMapLayer({
+    //     url: 'http://192.168.1.249:6080/arcgis/rest/services/0824/MapServer',
+    //     attribution: 'Tiles &copy; Esri',
+    // }).addTo(map);
+    // L.esri
+    //     .tiledMapLayer({
+    //         url: "https://tiles.arcgis.com/tiles/nGt4QxSblgDfeJn9/arcgis/rest/services/New_York_Housing_Density/MapServer",
+    //         pane: "overlayPane"
+    //     })
+    //     .addTo(map);
+
+</script>
+</body>
+</html>

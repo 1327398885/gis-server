@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Leaflet + Tianditu Example</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
+</head>
+<body>
+<div id="map" style="width: 800px; height: 600px;"></div>
+
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script>
+    var map = L.map('map').setView([32.1, 118.8], 12); //初始化地图
+
+    L.tileLayer('http://jiangsu.tianditu.gov.cn/historyraster/rest/services/History/yxdt_js_1966_2k/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'Tiles &copy; Tianditu',
+        maxZoom: 18,
+        id: 'Tianditu.TileLayer'
+    }).addTo(map);
+</script>
+</body>
+</html>
