@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaflet WMS Example</title>
+    <!-- Leaflet CSS and JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+    <!-- Proj4js and Proj4Leaflet -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.7.5/proj4.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4leaflet/1.0.2/proj4leaflet.min.js"></script>
+
+    <script src="leaflet-tilelayer-wmts-src.js"></script>
+</head>
+
+<body>
+
+<div id="map" style="width: 100%; height: 800px;"></div>
+
+<script>
+
+
+    // 首先，我们创建一个数组包含所有的服务器名：
+    const tdtServers = ['t0', 't1', 't2', 't3', 't4', 't5', 't6', 't7'];
+
+    // 接着，我们定义一个函数，用于返回一个随机的服务器名：
+    function getRandomTdtServer() {
+        const randomIndex = Math.floor(Math.random() * tdtServers.length);
+        return tdtServers[randomIndex];
+    }
+
+    // 扩展天地图tile瓦片加载方法
+    L.TileLayer.TdtLayer = L.TileLayer.extend({
+        getTileUrl: function (coords) {
+            var layerType = 'w'
+            return `http://${getRandomTdtServer()}.tianditu.gov.cn/` +
+                "vec_" + layerType +
+                "/wmts?tk=cfafaa0d269a0e29688c4482cfae7c64&SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=vec&STYLE=default&" +
+                "TILEMATRIXSET=" + layerType + "&FORMAT=tiles&TILECOL=" +
+                coords.x + "&TILEROW=" +
+                coords.y + "&TILEMATRIX=" + coords.z;
+        }
+    });
+
+    L.tileLayer.tdtLayer = function (options) {
+        return new L.TileLayer.TdtLayer(null, options)
+    }
+
+    var map = L.map('map', {
+        center: [
+            31.90059,
+            120.584663
+        ],
+        zoom: 1
+    });
+
+    var tdtTile = L.tileLayer.tdtLayer({
+        layerType: 'vec',
+        tms: true
+    });
+
+    map.addLayer(tdtTile);
+
+    map.on('click', function (e) {
+        console.log(e.latlng)
+    })
+
+
+
+</script>
+
+</body>
+
+</html>

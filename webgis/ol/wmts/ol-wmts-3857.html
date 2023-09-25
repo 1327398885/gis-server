@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WMTS-3857</title>
+    <!-- 引入OpenLayers库 -->
+    <link rel="stylesheet" href="../v6.15.1/ol.css" type="text/css">
+    <script src="../v6.15.1/ol.js"></script>
+</head>
+<style type="text/css">
+    body {
+        margin: 0;
+        padding: 0;
+    }
+    html, body, #map{
+        width: 100%;
+        height: 100%;
+    }
+</style>
+<body>
+<div id="map" class="map"></div>
+
+<script>
+    // 首先设置好WMTS瓦片地图的瓦片坐标系
+    let projection = ol.proj.get('EPSG:900913');          // 获取web墨卡托投影坐标系
+    let projectionExtent = projection.getExtent();      // web墨卡托投影坐标系的四至范围
+    let width = ol.extent.getWidth(projectionExtent);   // web墨卡托投影坐标系的水平宽度，单位米
+    let resolutions = [];                               // 瓦片地图分辨率
+    let matrixIds = [];                                  //矩阵ID
+    for(let z = 0; z < 20; z++){
+        resolutions[z] = width / (256 * Math.pow(2, z));
+        matrixIds[z] = "EPSG:900913:" + z;              // 注意这里的matrixId的格式为EPSG:900913:z
+    }
+    let wmtsTileGrid = new ol.tilegrid.WMTS({
+        origin: ol.extent.getTopLeft(projectionExtent), // 原点（左上角）
+        resolutions: resolutions,                       // 瓦片地图分辨率
+        matrixIds: matrixIds                            // 矩阵ID，就是瓦片坐标系z维度各个层级的标识
+    });
+
+    // WMTS数据源与地图
+    let wmtsSource = new ol.source.WMTS({
+        url: "http://localhost:8080/geoserver/gwc/service/wmts",
+        layer: "jiangsu:320205_202005",        // 对应的图层
+        matrixSet: 'EPSG:900913',           // 投影坐标系参数矩阵集
+        format: 'image/png',                // 图片格式
+        projection: projection,             // 投影坐标系
+        // 投影坐标系
+        tileGrid: wmtsTileGrid
+    });
+    let wmtsLayer = new ol.layer.Tile({
+        source: wmtsSource
+    });
+
+    let map = new ol.Map({
+        target: 'map',
+        layers: [
+            // new ol.layer.Tile({
+            //     source: new ol.source.Stamen({
+            //         layer: 'terrain'
+            //     })
+            // }),
+            wmtsLayer
+        ],
+        view: new ol.View({
+            center:  ol.proj.transform([119.3780, 32.9874], 'EPSG:4326', 'EPSG:3857'),
+            zoom: 8
+        })
+    });
+</script>
+</body>
+</html>

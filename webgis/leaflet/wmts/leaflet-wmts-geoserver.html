@@ -14,7 +14,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.7.5/proj4.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4leaflet/1.0.2/proj4leaflet.min.js"></script>
 
-    <script src="leaflet.tilelayer.wmts.src.js"></script>
+    <script src="leaflet-tilelayer-wmts-src.js"></script>
 </head>
 
 <body>
@@ -36,9 +36,8 @@
     var wmtsLayer = L.tileLayer.wmts(wmtsUrl, {
         layer: 'jiangsu:320205_202005', // WMTS地图层的名称
         style: '', // WMTS地图样式的名称
+        tilematrixSet: 'EPSG%3A900913',
         format: 'image/png', // WMTS支持的图像格式，可以是image/png、image/jpeg、image/gif等
-        tilematrixSet: 'WebMercatorQuad', // WMTS的瓦片矩阵集名称
-        projection: 'EPSG:3857', // WMTS的投影方式，这里使用的是4490坐标系
         tileSize: 256 // WMTS的瓦片大小，一般为256x256像素
     });
     map.addLayer(wmtsLayer);

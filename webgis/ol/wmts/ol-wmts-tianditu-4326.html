@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>加载天地图发布的WMTS影像服务数据</title>
+    <link rel="stylesheet" href="../v6.15.1/ol.css" type="text/css">
+    <script src="../v6.15.1/ol.js"></script>
+</head>
+<style type="text/css">
+    body {
+        margin: 0;
+        padding: 0;
+    }
+
+    html, body, #map {
+        width: 100%;
+        height: 100%;
+    }
+</style>
+<body>
+<div id="map" class="map"></div>
+<script>
+    // 首先设置好WMTS瓦片地图的瓦片坐标系
+    let projection = ol.proj.get('EPSG:4326');          // 获取web墨卡托投影坐标系
+    let projectionExtent = projection.getExtent();      // web墨卡托投影坐标系的四至范围
+    let width = ol.extent.getWidth(projectionExtent);   // web墨卡托投影坐标系的水平宽度，单位米
+    let resolutions = [];                               // 瓦片地图分辨率
+    let matrixIds = [];
+    for(let z = 1; z < 18; z++){
+        resolutions[z] = width / (256 * Math.pow(2, z));
+        matrixIds[z] = z;
+    }
+    let wmtsTileGrid = new ol.tilegrid.WMTS({
+        origin: ol.extent.getTopLeft(projectionExtent), // 原点（左上角）
+        resolutions: resolutions,                       // 瓦片分辨率
+        matrixIds: matrixIds                            // 矩阵ID，就是瓦片坐标系z维度各个层级的标识
+    });
+
+    // 首先，我们创建一个数组包含所有的服务器名：
+    const tdtServers = ['t0', 't1', 't2', 't3', 't4', 't5', 't6', 't7'];
+
+    // 接着，我们定义一个函数，用于返回一个随机的服务器名：
+    function getRandomTdtServer() {
+        const randomIndex = Math.floor(Math.random() * tdtServers.length);
+        return tdtServers[randomIndex];
+    }
+
+    // 然后，在创建WMTS数据源时，我们使用这个函数：
+    let wmtsSource = new ol.source.WMTS({
+        url: `http://${getRandomTdtServer()}.tianditu.gov.cn/img_c/wmts?tk=cfafaa0d269a0e29688c4482cfae7c64`,  // 使用动态的天地图服务器
+        layer: 'img',
+        version: '1.0.0',
+        matrixSet: 'c',
+        format: 'tiles',
+        projection: projection,
+        requestEncoding: 'KVP',
+        style: 'default',
+        tileGrid: wmtsTileGrid
+    });
+
+    let wmtsLayer = new ol.layer.Tile({
+        source: wmtsSource
+    });
+
+
+    let map = new ol.Map({
+        target: 'map',
+        layers: [
+            wmtsLayer
+        ],
+        view: new ol.View({
+            center: [116.46, 39.92],
+            projection: "EPSG:4326",
+            zoom: 5
+        })
+    });
+</script>
+</body>
+</html>

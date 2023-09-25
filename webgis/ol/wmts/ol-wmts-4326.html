@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WMTS-4326</title>
+    <!-- 引入OpenLayers库 -->
+    <link rel="stylesheet" href="../v6.15.1/ol.css" type="text/css">
+    <script src="../v6.15.1/ol.js"></script>
+</head>
+<style type="text/css">
+    body {
+        margin: 0;
+        padding: 0;
+    }
+    html, body, #map{
+        width: 100%;
+        height: 100%;
+    }
+</style>
+<body>
+<div id="map" class="map"></div>
+
+<script>
+    // 设置WMTS瓦片地图的瓦片坐标系为EPSG:4326
+    let projection = ol.proj.get('EPSG:4326');
+    let projectionExtent = projection.getExtent();
+    let size = ol.extent.getWidth(projectionExtent) / 256;
+    let resolutions = new Array(22);
+    let matrixIds = new Array(22);
+    for (let z = 0; z < 20; ++z) {
+        resolutions[z] = size / Math.pow(2, z+1);
+        console.log(resolutions[z])
+        matrixIds[z] = 'EPSG:4326:'+z;
+    }
+
+    let wmtsTileGrid = new ol.tilegrid.WMTS({
+        tileSize: [256, 256],
+        extent: [-180.0, -90.0, 180.0, 90.0],  //范围
+        origin: [-180.0, 90.0],   //切片原点
+        resolutions: resolutions,
+        matrixIds: matrixIds
+    });
+
+    // WMTS数据源与地图
+    let wmtsSource = new ol.source.WMTS({
+        url: "http://localhost:8080/geoserver/gwc/service/wmts",
+        layer: "jiangsu:320205_202005",        // 对应的图层
+        matrixSet: 'EPSG:4326',         // 投影坐标系参数矩阵集
+        format: 'image/png',                // 图片格式
+        projection: projection,             // 投影坐标系
+        // 投影坐标系
+        tileGrid: wmtsTileGrid
+    });
+    let wmtsLayer = new ol.layer.Tile({
+        source: wmtsSource
+    });
+
+    let map = new ol.Map({
+        target: 'map',
+        layers: [
+            new ol.layer.Tile({
+                source: new ol.source.Stamen({
+                    layer: 'terrain'
+                })
+            }),
+            wmtsLayer
+        ],
+        view: new ol.View({
+            center: [116.46, 39.92],
+            projection: "EPSG:4326",
+            zoom: 5,
+            maxZoom: 20,
+            minZoom: 2
+        })
+    });
+</script>
+</body>
+</html>

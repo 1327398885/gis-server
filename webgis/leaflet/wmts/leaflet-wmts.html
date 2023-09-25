@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Leaflet WMTS Example</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <style>
+        #map { height: 400px; }
+    </style>
+</head>
+<body>
+<div id='map'></div>
+
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script src="leaflet-tilelayer-wmts.js"></script>
+<script>
+    var map = L.map('map',{
+        crs:  L.CRS.EPSG4326
+    }).setView([32.0603, 118.7969], 9);
+
+    // Assuming the bounds for Jiangsu Province
+    var southWest = L.latLng(30.7924, 116.4558);
+    var northEast = L.latLng(34.4214, 121.1850);
+    var bounds = L.latLngBounds(southWest, northEast);
+
+    var wmtsUrl = 'http://dxjc.efgd.net:8084/geologicalMap/geowebcache/service/wmts'
+    var wmtsLayer = L.tileLayer.wmts(wmtsUrl, {
+        layer: 'Image2022',
+        style: 'default',
+        tilematrixSet: 'EPSG:4490_Image2022',
+        format: 'image/jpeg',
+        maxZoom: 20
+    }).addTo(map);
+
+    // map.setMaxBounds(bounds);  // Constraining the map view here
+
+</script>
+</body>
+</html>

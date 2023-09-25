@@ -7,6 +7,7 @@ import com.alibaba.fastjson.JSONObject;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -34,7 +35,7 @@ public class TileCalculator {
      * @param endY           拼接区域的结束Y坐标
      * @param outputFilePath 输出图像的保存路径
      */
-    public static void stitchTiles(int startX, int startY, int endX, int endY, String outputFilePath) {
+    public static BufferedImage stitchTiles(int startX, int startY, int endX, int endY, String outputFilePath) {
         int tileWidth = 256;
         int tileHeight = 256;
 
@@ -60,29 +61,8 @@ public class TileCalculator {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    /**
-     * 根据经纬度范围和预期的图像大小来计算最佳的缩放级别。
-     *
-     * @param minLat    纬度范围的最小值
-     * @param maxLat    纬度范围的最大值
-     * @param minLng    经度范围的最小值
-     * @param maxLng    经度范围的最大值
-     * @param mapWidth  预期图像的宽度
-     * @param mapHeight 预期图像的高度
-     * @return 最佳的缩放级别
-     */
-    public static int calculateZoomLevel(double minLat, double maxLat, double minLng, double maxLng, int mapWidth, int mapHeight) {
-        int maxZoom = 18;
-        for (int zoom = maxZoom; zoom >= 0; zoom--) {
-            double latZoom = 256 * Math.pow(2, zoom) / 180;
-            double lngZoom = 256 * Math.pow(2, zoom) / 360;
-            if ((maxLat - minLat) * latZoom <= mapHeight && (maxLng - minLng) * lngZoom <= mapWidth) {
-                return zoom;
-            }
-        }
-        return 0;
+        g.dispose();
+        return outputImage;
     }
 
 
@@ -111,8 +91,21 @@ public class TileCalculator {
      * @throws IOException 当下载过程出现问题时抛出
      */
     public static void downloadTile(int z, int x, int y) throws IOException {
-        String s = "a"; // 可以是 'a', 'b', 或 'c'
-        String tileUrl = String.format("https://%s.tile.openstreetmap.org/%d/%d/%d.png", s, z, x, y);
+//        String s = "a"; // 可以是 'a', 'b', 或 'c'
+//        String tileUrl = String.format("https://%s.tile.openstreetmap.org/%d/%d/%d.png", s, z, x, y);
+//
+        // 转换Google TMS Y坐标到GeoServer TMS Y坐标
+        int yGeoServer = (int) (Math.pow(2, z) - 1 - y);
+
+        String workspace = "jiangsu";
+        String layerName = "320205_202005";
+        String crs = "EPSG:900913"; // 更改这个值以适应你的实际坐标参照系统
+        String format = "png"; // 格式可以是png, jpg等
+
+        String tileUrl = String.format("http://localhost:8080/geoserver/gwc/service/tms/1.0.0/%s:%s@%s@%s/%d/%d/%d.%s",
+                workspace, layerName, crs, format, z, x, yGeoServer, format);
+
+
         URL url = new URL(tileUrl);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("GET");
@@ -138,12 +131,15 @@ public class TileCalculator {
      * @param lon2 视窗的右下角经度
      * @param zoom 缩放级别
      */
-    public static void tilesInViewport(double lat1, double lon1, double lat2, double lon2, int zoom) {
+    public static TmsTileInfo tilesInViewport(double lat1, double lon1, double lat2, double lon2, int zoom) {
         int[] tile1 = latLonToTile(lat1, lon1, zoom);
         int[] tile2 = latLonToTile(lat2, lon2, zoom);
 
         int xTile1 = tile1[0], yTile1 = tile1[1];
         int xTile2 = tile2[0], yTile2 = tile2[1];
+
+        int xCount = Math.abs(xTile2 - xTile1) + 1;
+        int yCount = Math.abs(yTile2 - yTile1) + 1;
 
         for (int x = Math.min(xTile1, xTile2); x <= Math.max(xTile1, xTile2); x++) {
             for (int y = Math.min(yTile1, yTile2); y <= Math.max(yTile1, yTile2); y++) {
@@ -156,46 +152,100 @@ public class TileCalculator {
                 }
             }
         }
+        TmsTileInfo tmsTileInfo = new TmsTileInfo(xCount, yCount, zoom);
+        return tmsTileInfo;
     }
 
-    public static void main(String[] args) {
+    public static int calculateZoomLevel(double minX, double maxX, double minY, double maxY, int imgWidth, int imgHeight) {
+        int maxZoom = 18;
+        double xRange = maxX - minX;
+        double yRange = maxY - minY;
+        double xZoom = xRange / imgWidth;
+        double yZoom = yRange / imgHeight;
 
+        double zoom = Math.min(xZoom, yZoom);
+        for (int i = 0; i <= maxZoom; i++) {
+            double resolution = 20037508.34 * 2 / (256 * Math.pow(2, i));
+            if (resolution <= zoom) {
+                return i;
+            }
+        }
+        return maxZoom;
+    }
 
+    public static int renderPolygon(String geoJsonStr, int imgWidth, int imgHeight) throws IOException {
+        // 解析GeoJSON字符串
+        JSONObject geoJsonObj = JSON.parseObject(geoJsonStr);
+        JSONArray coordinates = geoJsonObj.getJSONArray("coordinates").getJSONArray(0);
+
+        BufferedImage image = new BufferedImage(imgWidth, imgHeight, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = image.createGraphics();
+        g.setColor(Color.WHITE);
+        g.fillRect(0, 0, imgWidth, imgHeight);
+
+        double minX = Double.POSITIVE_INFINITY, maxX = Double.NEGATIVE_INFINITY;
+        double minY = Double.POSITIVE_INFINITY, maxY = Double.NEGATIVE_INFINITY;
+
+        for (int i = 0; i < coordinates.size(); i++) {
+            JSONArray point = coordinates.getJSONArray(i);
+            double x = point.getDoubleValue(0);
+            double y = point.getDoubleValue(1);
+            minX = Math.min(minX, x);
+            maxX = Math.max(maxX, x);
+            minY = Math.min(minY, y);
+            maxY = Math.max(maxY, y);
+        }
+
+        int zoomLevel = calculateZoomLevel(minX, maxX, minY, maxY, imgWidth, imgHeight);
+
+        double xScale = imgWidth / (maxX - minX);
+        double yScale = imgHeight / (maxY - minY);
+        double scale = Math.min(xScale, yScale);
+
+        Polygon polygon = new Polygon();
+
+        for (int i = 0; i < coordinates.size(); i++) {
+            JSONArray point = coordinates.getJSONArray(i);
+            double x = point.getDoubleValue(0);
+            double y = point.getDoubleValue(1);
+            int scaledX = (int) ((x - minX) * scale);
+            int scaledY = (int) ((y - minY) * scale);
+            polygon.addPoint(scaledX, imgHeight - scaledY);  // 注意：这里翻转了y坐标
+        }
+
+        g.setColor(new Color(255, 0, 0, 128));
+        g.fillPolygon(polygon);
+        g.dispose();
+
+        ImageIO.write(image, "png", new File("E:\\code\\github\\gis-server\\data\\output\\dataTest\\output.png"));
+
+        return zoomLevel;
+    }
+
+    public static void demo() {
         try {
             String geoJsonStr = "{\n" +
                     "        \"coordinates\": [\n" +
                     "          [\n" +
                     "            [\n" +
-                    "              121.59100125089134,\n" +
-                    "              31.26934950481734\n" +
+                    "              120.49260317333017,\n" +
+                    "              31.619643076821475\n" +
                     "            ],\n" +
                     "            [\n" +
-                    "              121.5037127674313,\n" +
-                    "              31.23044597723178\n" +
+                    "              120.49269519023414,\n" +
+                    "              31.61621942444208\n" +
                     "            ],\n" +
                     "            [\n" +
-                    "              121.51070770802284,\n" +
-                    "              31.19564370235183\n" +
+                    "              120.49670146764805,\n" +
+                    "              31.616339977720642\n" +
                     "            ],\n" +
                     "            [\n" +
-                    "              121.56655578988659,\n" +
-                    "              31.167329748013714\n" +
+                    "              120.49655282484696,\n" +
+                    "              31.619727461000494\n" +
                     "            ],\n" +
                     "            [\n" +
-                    "              121.6215764927623,\n" +
-                    "              31.183257389258316\n" +
-                    "            ],\n" +
-                    "            [\n" +
-                    "              121.67452874816018,\n" +
-                    "              31.222180342290343\n" +
-                    "            ],\n" +
-                    "            [\n" +
-                    "              121.63564193560251,\n" +
-                    "              31.251892536822737\n" +
-                    "            ],\n" +
-                    "            [\n" +
-                    "              121.59100125089134,\n" +
-                    "              31.26934950481734\n" +
+                    "              120.49260317333017,\n" +
+                    "              31.619643076821475\n" +
                     "            ]\n" +
                     "          ]\n" +
                     "        ],\n" +
@@ -208,6 +258,12 @@ public class TileCalculator {
 
             int imageWidth = 640;
             int imageHeight = 480;
+
+            BufferedImage image = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_RGB);
+            Graphics2D g = image.createGraphics();
+            g.setColor(Color.WHITE);
+            g.fillRect(0, 0, imageWidth, imageHeight);
+
 
             double minLng = Double.POSITIVE_INFINITY, maxLng = Double.NEGATIVE_INFINITY;
             double minLat = Double.POSITIVE_INFINITY, maxLat = Double.NEGATIVE_INFINITY;
@@ -223,7 +279,7 @@ public class TileCalculator {
             }
 
             int bestZoom = calculateZoomLevel(minLat, maxLat, minLng, maxLng, imageWidth, imageHeight);
-            double zoomFactor = Math.pow(2, bestZoom - 1);
+            double zoomFactor = Math.pow(2, bestZoom - 3);
 
             double xScale = (imageWidth / 256.0) * zoomFactor;
             double yScale = (imageHeight / 256.0) * zoomFactor;
@@ -233,6 +289,7 @@ public class TileCalculator {
 
             double imageCenterX = imageWidth / 2.0;
             double imageCenterY = imageHeight / 2.0;
+
 
             // 计算四个角点的经纬度
             double topLeftLat = polygonCenterY + (imageCenterY - 0) / yScale;
@@ -258,12 +315,27 @@ public class TileCalculator {
             int[] tile1 = latLonToTile(topLeftLat, topLeftLng, bestZoom);
             int[] tile2 = latLonToTile(bottomRightLat, bottomRightLng, bestZoom);
 
-            tilesInViewport(topLeftLat, topLeftLng, bottomLeftLat, bottomRightLng, bestZoom);
-            stitchTiles(tile1[0], tile1[1], tile2[0], tile2[1], "E:\\code\\github\\gis-server\\data\\output\\dataTest\\stitched_image.png");
+            TmsTileInfo tmsTileInfo = tilesInViewport(topLeftLat, topLeftLng, bottomLeftLat, bottomRightLng, bestZoom);
+            BufferedImage bufferedImage = stitchTiles(tile1[0], tile1[1], tile2[0], tile2[1], "E:\\code\\github\\gis-server\\data\\output\\dataTest\\stitched_image.png");
 
+
+            // 裁剪底图
+            // 计算偏移量和裁剪区域
+            int offsetX = (bufferedImage.getWidth() - imageWidth) / 2;
+            int offsetY = (bufferedImage.getHeight() - imageHeight) / 2;
+
+            BufferedImage croppedImage = bufferedImage.getSubimage(offsetX,offsetY,imageWidth,imageHeight);
+
+// 保存裁剪后的图像
+            File outputImageFile = new File("E:\\code\\github\\gis-server\\data\\output\\dataTest\\stitched_image_new.png");
+            ImageIO.write(croppedImage, "png", outputImageFile);
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public static void main(String[] args) {
+        demo();
     }
 }
